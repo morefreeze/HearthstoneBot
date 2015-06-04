@@ -87,6 +87,7 @@ namespace HearthstoneBot
 			}
         }
 
+        /*
         // Get a random pratice AI mission
         private MissionID getRandomAIMissionID(bool expert)
         {
@@ -121,6 +122,7 @@ namespace HearthstoneBot
             // Return the corresponding ID
             return AI_Selected[index];
         }
+         * */
         
         // Return whether Mulligan was done
 		private bool mulligan()
@@ -182,7 +184,7 @@ namespace HearthstoneBot
 
             // Don't do this, if we're currently in a game, or matching a game
             // TODO: Change to an assertion
-            if (SceneMgr.Get().IsInGame() || Network.IsMatching())
+            if (SceneMgr.Get().IsInGame() || Network.Get().IsFindingGame())
             {
                 return;
             }
@@ -203,32 +205,42 @@ namespace HearthstoneBot
 
             // Get the ID of the current Deck
             long selectedDeckID = DeckPickerTrayDisplay.Get().GetSelectedDeckID();
+            SceneMgr.Mode mode = ranked ? SceneMgr.Mode.TOURNAMENT : SceneMgr.Mode.TOURNAMENT;
+            SceneMgr.Get().SetNextMode(mode);
+            /*
             // We want to play vs other players
-            MissionID missionID = MissionID.MULTIPLAYER_1v1;
+            MissionID missionID = ScenarioDbId.MULTIPLAYER_1v1;
             // Ranked or unranked?
             GameMode mode = ranked ? GameMode.RANKED_PLAY : GameMode.UNRANKED_PLAY;
             // Setup up the game
             GameMgr.Get().SetNextGame(mode, missionID);
+             * */
             // Do network join
+            PegasusShared.GameType type;
             if(ranked)
             {
                 Network.TrackClient(Network.TrackLevel.LEVEL_INFO,
                         Network.TrackWhat.TRACK_PLAY_TOURNAMENT_WITH_CUSTOM_DECK);
-                Network.RankedMatch(selectedDeckID);
+                type = PegasusShared.GameType.GT_RANKED;
+                //Network.RankedMatch(selectedDeckID);
             }
             else
             {
                 Network.TrackClient(Network.TrackLevel.LEVEL_INFO,
                         Network.TrackWhat.TRACK_PLAY_CASUAL_WITH_CUSTOM_DECK);
-                Network.UnrankedMatch(selectedDeckID);
+                type = PegasusShared.GameType.GT_UNRANKED;
+                //Network.UnrankedMatch(selectedDeckID);
             }
+            GameMgr.Get().FindGame(type, 2, selectedDeckID, 0L);
             // Set status
-            FriendChallengeMgr.Get().OnEnteredMatchmakerQueue();
+            FriendChallengeMgr.Get().RescindChallenge();
+            //FriendChallengeMgr.Get().OnEnteredMatchmakerQueue();
             GameMgr.Get().UpdatePresence();
 
             just_joined = true;
         }
 
+        /*
         // Play against AI
         // Found at: PracticePickerTrayDisplay search for StartGame
         private void pratice_mode(bool expert)
@@ -259,6 +271,7 @@ namespace HearthstoneBot
             
             just_joined = true;
         }
+         * */
 
         // Called when a game is in mulligan state
         private void do_mulligan()
@@ -360,7 +373,7 @@ namespace HearthstoneBot
                 game_over();
             }
             // If it's not our turn
-            else if (gs.IsLocalPlayerTurn() == true)
+            else if (gs.IsFriendlySidePlayerTurn() == true)
             {
                 run_ai();
             }
@@ -414,7 +427,7 @@ namespace HearthstoneBot
                         case Mode.PRATICE_NORMAL:
                         case Mode.PRATICE_EXPERT:
                             // Enter Pratice Mode
-                            SceneMgr.Get().SetNextMode(SceneMgr.Mode.PRACTICE);
+                            SceneMgr.Get().SetNextMode(SceneMgr.Mode.HUB);
                             break;
 
                         case Mode.TOURNAMENT_RANKED:
@@ -441,7 +454,7 @@ namespace HearthstoneBot
                     break; 
 
                 // In Pratice Sub Menu
-                case SceneMgr.Mode.PRACTICE:
+                case SceneMgr.Mode.ADVENTURE:
                     bool expert = false;
                     switch(game_mode)
                     {
@@ -466,7 +479,7 @@ namespace HearthstoneBot
                     }
 
                     // Play against AI
-                    pratice_mode(expert);
+                    //pratice_mode(expert);
                     break;
 
                 // In Play Sub Menu

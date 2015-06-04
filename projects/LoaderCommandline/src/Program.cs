@@ -18,10 +18,10 @@ namespace HearthstoneBot
             if (hearthstone_path == null)
             {
                 // Check that the file exists
-                if (File.Exists("injector/path"))
+                if (File.Exists("./path"))
 			    {
                     // If it does, read the path and return it
-                    return File.ReadAllText("injector/path");
+                    return File.ReadAllText("./path");
                 }
                 else // Nothing we can do, inform the user, to set it
                 {
@@ -32,7 +32,7 @@ namespace HearthstoneBot
                     if(executable_found)
                     {
                         // Write the file, and return the string
-                        File.WriteAllText("injector/path", path);
+                        File.WriteAllText("./path", path);
                         return path;
                     }
                     else
@@ -49,7 +49,7 @@ namespace HearthstoneBot
                 if (Directory.Exists("injector"))
                 {
                     // Write the file, and return the string
-				    File.WriteAllText("injector/path", hearthstone_path);
+				    File.WriteAllText("./path", hearthstone_path);
                     return hearthstone_path;
                 }
                 else // If the folder didn't exist, the installation is broke
@@ -72,14 +72,14 @@ namespace HearthstoneBot
 
         private static void regen_inject()
         {
-            string modified_assembly_csharp = "injector/Assembly-CSharp.dll";
+            string modified_assembly_csharp = "./Assembly-CSharp.dll";
             // If the modified assembly charp file, was found, we'll remove it
             if(File.Exists(modified_assembly_csharp))
             {
                 File.Delete(modified_assembly_csharp);
             }
 
-            string original_assembly_csharp = "injector/Assembly-CSharp.original.dll";
+            string original_assembly_csharp = "./Assembly-CSharp.original.dll";
             // If the modified assembly charp file, was found, we'll remove it
             if(File.Exists(original_assembly_csharp))
             {
@@ -181,7 +181,7 @@ namespace HearthstoneBot
                 // Connect the TCP client
 				client.Connect("127.0.0.1", 8111);
             }
-            catch(Exception /*e*/)
+            catch(Exception e)
             {
                 Console.WriteLine("ERROR: Unable to open connection to bot!");
                 Console.WriteLine("\tCheck that Hearthstone is running, and injected");
@@ -236,7 +236,7 @@ namespace HearthstoneBot
 
         static void injection_status(string hearthstone_path)
         {
-            string modified_assembly_csharp = "injector/Assembly-CSharp.dll";
+            string modified_assembly_csharp = "./Assembly-CSharp.dll";
             // If the modified assembly charp file, was not found, we'll create it
             if(!File.Exists(modified_assembly_csharp))
             {
@@ -295,15 +295,15 @@ namespace HearthstoneBot
 
             // Check that the injector can be found
             string injector_executable = "Injector.exe";
-            string injector_path = "injector/" + injector_executable;
+            string injector_path = "./" + injector_executable;
             if(File.Exists(injector_path) == false)
             {
-                Console.WriteLine("Error: Injector not found (injector/Injector.exe)!");
+                Console.WriteLine("Error: Injector not found (./Injector.exe)!");
                 Console.WriteLine("\tCheck your installation!");
                 Environment.Exit(-1);
             }
             // Check if the Assembly-CSharp.orig.dll file can be found
-            string original_assembly_csharp = "injector/Assembly-CSharp.original.dll";
+            string original_assembly_csharp = "./Assembly-CSharp.original.dll";
             if(File.Exists(original_assembly_csharp) == false)
             {
                 try
@@ -330,7 +330,7 @@ namespace HearthstoneBot
             //process.StartInfo.Arguments = injector_executable;
             process.StartInfo.UseShellExecute = false;
             process.StartInfo.CreateNoWindow = true;
-            process.StartInfo.WorkingDirectory = "injector";
+            process.StartInfo.WorkingDirectory = ".";
             // Inform the user
             Console.WriteLine("Creating injection file...");
             // Start the injector process
@@ -352,7 +352,7 @@ namespace HearthstoneBot
 
         static void inject(string hearthstone_path)
         {
-            string modified_assembly_csharp = "injector/Assembly-CSharp.dll";
+            string modified_assembly_csharp = "./Assembly-CSharp.dll";
             // If the modified assembly charp file, was not found, we'll create it
             if(!File.Exists(modified_assembly_csharp))
             {
@@ -374,7 +374,7 @@ namespace HearthstoneBot
             }
             // At this point we know that we'll be able to inject the file
             Console.WriteLine("Injecting files, into the Heartstone directory");
-            IEnumerable<string> files = Directory.EnumerateFiles("injector", "*.dll");
+            IEnumerable<string> files = Directory.EnumerateFiles(".", "*.dll");
             foreach(string file_name in files)
             {
                 // Create the destination name

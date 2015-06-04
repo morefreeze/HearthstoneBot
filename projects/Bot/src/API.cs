@@ -322,7 +322,7 @@ namespace HearthstoneBot
 
         public static Player getOurPlayer()
         {
-            return GameState.Get().GetLocalPlayer();
+            return GameState.Get().GetFriendlySidePlayer();
         }
 
         public static Player getEnemyPlayer()
@@ -371,7 +371,7 @@ namespace HearthstoneBot
             Entity entity = component.GetEntity();
             component.NotifyLeftPlayfield();
             GameState.Get().GetGameEntity().NotifyOfCardDropped(entity);
-            m_myPlayZone.UnHighlightBattlefield();
+            //m_myPlayZone.UnHighlightBattlefield();
             DragCardSoundEffects component2 = component.GetComponent<DragCardSoundEffects>();
             if (component2)
             {
