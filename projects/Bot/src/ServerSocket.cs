@@ -17,7 +17,7 @@ namespace HearthstoneBot
     {
         // Server setup information
         private readonly IPAddress IP = null;
-        private const Int32 SERVER_PORT = 8111;
+        private const Int32 SERVER_PORT = 8112;
 
         // Work variables
         private readonly Mutex mutex;
@@ -29,6 +29,8 @@ namespace HearthstoneBot
         private volatile TcpListener socket = null;
         private volatile TcpClient client = null;
         private volatile NetworkStream network_stream = null;
+        private volatile bool shell_mode = true;
+        private APICmd api_cmd = null;
 
         public ServerSocket()
         {
@@ -38,6 +40,7 @@ namespace HearthstoneBot
             thread = new Thread(new ThreadStart(run));
 
             mutex = new Mutex();
+            api_cmd = new APICmd();
             Log.log("ServerSocket loaded!");
         }
 
@@ -102,21 +105,30 @@ namespace HearthstoneBot
                     // At this point, the network stream is readable
                     // Read the entire client string
                     StreamReader sr = new StreamReader(network_stream);
-                    string command = sr.ReadToEnd();
-                    // Report that we've got a command
-                    Log.log("Got network command");
-                    // Wait until it is safe to enter.
-                    mutex.WaitOne();
-                    // Append command to lazy list
-                    events.Add(command);
-                    // Release the Mutex.
-                    mutex.ReleaseMutex();
+                    while (true)
+                    {
+                        string command = sr.ReadLine();
+                        // Report that we've got a command
+                        Log.log("Got network command: " + command);
+                        // Wait until it is safe to enter.
+                        mutex.WaitOne();
+                        // Append command to lazy list
+                        events.Add(command);
+                        // Release the Mutex.
+                        mutex.ReleaseMutex();
 
-                    // At this point, we're done;
-                    // Close the network stream
-                    network_stream.Close();
-                    // Close connection to client
-                    client.Close();
+                        if (!shell_mode)
+                        {
+                            Log.log("we will close!");
+                            // At this point, we're done;
+                            // Close the network stream
+                            network_stream.Close();
+                            // Close connection to client
+                            client.Close();
+                            break;
+                        }
+                    }
+                    
 				}
 			}
 			catch(Exception e)
@@ -154,6 +166,7 @@ namespace HearthstoneBot
 
 		private void handle_event_internal(string data)
 		{
+            StreamWriter sw = new StreamWriter(network_stream);
             // Stop the bot
 			if (data.Contains("stop_bot"))
 			{
@@ -205,6 +218,17 @@ namespace HearthstoneBot
                     Log.error("While trying to set mode:");
                     Log.error("Unknown mode = " + actual_mode);
                 }
+            }
+            else if (data.Contains("get_cry"))
+            {
+                sw.WriteLine("ememy: " + api_cmd.getCrystals("ENEMY_HERO") + " $ " + "me: " + api_cmd.getCrystals("OUR_HERO"));
+                sw.Flush();
+            }
+            else if (data.Contains("shell"))
+            {
+                shell_mode = true;
+                sw.WriteLine("shell succc");
+                sw.Flush();
             }
             else
             {

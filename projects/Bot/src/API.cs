@@ -356,18 +356,18 @@ namespace HearthstoneBot
             PegCursor.Get().SetMode(PegCursor.Mode.STOPDRAG);
 
             InputManager input_man = InputManager.Get();
-            if (input_man.heldObject == null)
+            if (input_man.GetHeldCard() == null)
             {
                 Log.log("Nothing held, when trying to drop");
                 return false;
             }
-            Card component = input_man.heldObject.GetComponent<Card>();
+            Card component = input_man.GetHeldCard();
 
             ZonePlay m_myPlayZone = PrivateHacker.get_m_myPlayZone();
             ZoneHand m_myHandZone = PrivateHacker.get_m_myHandZone();
             
             component.SetDoNotSort(false);
-            iTween.Stop(input_man.heldObject);
+            //iTween.Stop(input_man.heldObject);
             Entity entity = component.GetEntity();
             component.NotifyLeftPlayfield();
             GameState.Get().GetGameEntity().NotifyOfCardDropped(entity);
@@ -377,8 +377,8 @@ namespace HearthstoneBot
             {
                 component2.Disable();
             }
-            UnityEngine.Object.Destroy(input_man.heldObject.GetComponent<DragRotator>());
-            input_man.heldObject = null;
+            //UnityEngine.Object.Destroy(input_man.heldObject.GetComponent<DragRotator>());
+            //input_man.heldObject = null;
             ProjectedShadow componentInChildren = component.GetActor().GetComponentInChildren<ProjectedShadow>();
             if (componentInChildren != null)
             {
@@ -444,8 +444,8 @@ namespace HearthstoneBot
                 {
                     if (GameState.Get().EntityHasTargets(entity))
                     {
-                        input_man.heldObject = null;
-                        EnemyActionHandler.Get().NotifyOpponentOfCardDropped();
+                        //input_man.heldObject = null;
+                        RemoteActionHandler.Get().NotifyOpponentOfCardDropped();
                         m_myHandZone.UpdateLayout(-1, true);
                         m_myPlayZone.SortWithSpotForHeldCard(-1);
 
@@ -477,16 +477,16 @@ namespace HearthstoneBot
             m_myPlayZone.SortWithSpotForHeldCard(-1);
             if (does_target)
             {
-                if (EnemyActionHandler.Get())
+                if (RemoteActionHandler.Get())
                 {
-                    EnemyActionHandler.Get().NotifyOpponentOfTargetModeBegin(component);
+                    RemoteActionHandler.Get().NotifyOpponentOfTargetModeBegin(component);
                 }
             }
             else
             {
                 if (GameState.Get().GetResponseMode() != GameState.ResponseMode.SUB_OPTION)
                 {
-                    EnemyActionHandler.Get().NotifyOpponentOfCardDropped();
+                    RemoteActionHandler.Get().NotifyOpponentOfCardDropped();
                 }
             }
             return true;

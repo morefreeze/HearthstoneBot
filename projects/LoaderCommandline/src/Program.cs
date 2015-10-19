@@ -25,7 +25,7 @@ namespace HearthstoneBot
                 }
                 else // Nothing we can do, inform the user, to set it
                 {
-                    string path = "C:\\Program Files (x86)\\Hearthstone";
+                    string path = "e:\\Program Files (x86)\\Hearthstone";
                     string hearthstone_executable = path + "\\Hearthstone.exe";
                     // If the executable was found, then assume this is the hearthstone folder
                     bool executable_found = File.Exists(hearthstone_executable);
@@ -135,7 +135,6 @@ namespace HearthstoneBot
                 string hearthstone_path = set_path(set_path_string);
                 // Validate that the hearthstone folder is indeed legit
                 validate_hearthstone_folder(hearthstone_path);
-
                 foreach(string command in extra)
                 {
                     switch(command)
@@ -157,7 +156,7 @@ namespace HearthstoneBot
                             break;
 
                         case "startbot":
-                            startbot(mode);
+                            startbot(mode, hearthstone_path);
                             break;
 
                         case "stopbot":
@@ -166,6 +165,9 @@ namespace HearthstoneBot
 
                         case "reload":
                             reload_scripts();
+                            break;
+                        case "shell":
+                            send_bot_command("shell");
                             break;
                     }
                 }
@@ -179,7 +181,7 @@ namespace HearthstoneBot
             try
 		    {
                 // Connect the TCP client
-				client.Connect("127.0.0.1", 8111);
+				client.Connect("127.0.0.1", 8112);
             }
             catch(Exception e)
             {
@@ -202,22 +204,48 @@ namespace HearthstoneBot
                 Environment.Exit(-1);
             }
             // At this point, we're able to write our message
+
             StreamWriter sw = new StreamWriter(network_stream);
             sw.WriteLine(cmd);
             sw.Flush();
+            if (cmd == "shell")
+            {
+                StreamReader sr = new StreamReader(network_stream);
+                string shell_cmd;
+                while (true)
+                {
+                    shell_cmd = Console.ReadLine();
+                    if ("quit" == shell_cmd)
+                    {
+                        break;
+                    }
+                    sw.WriteLine(shell_cmd);
+                    sw.Flush();
+                    string data = sr.ReadLine();
+                    Console.WriteLine(data);
+                }
+            }
+            else
+            {
+
+            }
             // Clean up the resources
             client.Close();
             network_stream.Close();
         }
 
-        static void startbot(string mode)
+        static void startbot(string mode, string hearthstone_path)
         {
-            send_bot_path();
-            if(mode != null)
+            string hearthstone_executable = hearthstone_path + "\\Hearthstone.exe";
+            using (Process hs_exe = Process.Start(hearthstone_executable))
             {
-                send_bot_command("mode=" + mode);
+                send_bot_path();
+                if (mode != null)
+                {
+                    send_bot_command("mode=" + mode);
+                }
+                send_bot_command("start_bot");
             }
-            send_bot_command("start_bot");
         }
         static void stopbot()
         {
